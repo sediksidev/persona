@@ -1,8 +1,7 @@
 import { useContext, createContext } from "react";
-import { type FhevmGoState } from '@/fhevm-react/useFhevm';
-import type { FhevmInstance } from '@/fhevm-react/fhevmTypes';
+import { type FhevmGoState } from "@/lib/fhevm-react/useFhevm";
+import type { FhevmInstance } from "@/lib/fhevm-react/fhevmTypes";
 import { useAccount, useSignTypedData } from "wagmi";
-import { toast } from "sonner";
 
 interface FhevmContextValue {
   instance: FhevmInstance | undefined;
@@ -11,12 +10,14 @@ interface FhevmContextValue {
   refresh: () => void;
 }
 
-export const FhevmContext = createContext<FhevmContextValue | undefined>(undefined);
+export const FhevmContext = createContext<FhevmContextValue | undefined>(
+  undefined
+);
 
 export const useFhevmContext = () => {
   const context = useContext(FhevmContext);
   if (!context) {
-    throw new Error('useFhevmContext must be used within FhevmProvider');
+    throw new Error("useFhevmContext must be used within FhevmProvider");
   }
   return context;
 };
@@ -28,28 +29,31 @@ export const useFheDecryption = () => {
 
   const publicDecrypt = async (handles: string[]) => {
     try {
-      if (!handles || !Array.isArray(handles) || handles.length === 0) 
+      if (!handles || !Array.isArray(handles) || handles.length === 0)
         throw new Error("No encrypted responses provided");
-      if (!fhe || status !== 'ready') {
+      if (!fhe || status !== "ready") {
         throw new Error("FHEVM not ready for decryption");
       }
       const result = await fhe.publicDecrypt(handles);
-      return result
+      return result;
     } catch (error) {
-      toast.error('Failed to reveal responses: ' + String(error))
+      console.error("Failed to reveal responses: " + String(error));
     }
-  }
+  };
 
-  const userDecrypt = async (handles: string[], contractAddress: string | `0x${string}` | `Address`) => {
+  const userDecrypt = async (
+    handles: string[],
+    contractAddress: string | `0x${string}` | `Address`
+  ) => {
     try {
-      if (!handles || !Array.isArray(handles) || handles.length === 0) 
+      if (!handles || !Array.isArray(handles) || handles.length === 0)
         throw new Error("No encrypted responses provided");
-      if (!fhe || status !== 'ready') {
+      if (!fhe || status !== "ready") {
         throw new Error("FHEVM not ready for decryption");
       }
 
       // simulate decryption process
-      const keypair = fhe.generateKeypair()
+      const keypair = fhe.generateKeypair();
       const handleContractPair = (handles as string[]).map((ciphertext) => {
         return {
           handle: ciphertext,
@@ -57,28 +61,30 @@ export const useFheDecryption = () => {
         };
       });
       const startTimeStamp = Math.floor(Date.now() / 1000).toString();
-      const durationDays = '10'; // String for consistency
+      const durationDays = "10"; // String for consistency
       const contractAddresses = [contractAddress];
 
       const eip712 = fhe.createEIP712(
         keypair.publicKey,
         contractAddresses,
         startTimeStamp,
-        durationDays,
+        durationDays
       );
 
       // Cast verifyingContract to the required template literal type (`0x${string}`) to satisfy typed-data domain typing.
       const domain = {
         ...eip712.domain,
-        verifyingContract: eip712.domain.verifyingContract as unknown as `0x${string}`,
+        verifyingContract: eip712.domain
+          .verifyingContract as unknown as `0x${string}`,
       };
 
       const signature = await signTypedDataAsync({
         domain,
         types: {
-          UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification,
+          UserDecryptRequestVerification:
+            eip712.types.UserDecryptRequestVerification,
         },
-        primaryType: 'UserDecryptRequestVerification',
+        primaryType: "UserDecryptRequestVerification",
         message: eip712.message,
       });
 
@@ -86,18 +92,18 @@ export const useFheDecryption = () => {
         handleContractPair,
         keypair.privateKey,
         keypair.publicKey,
-        signature.replace('0x', ''),
+        signature.replace("0x", ""),
         contractAddresses,
         account.address as `0x${string}`,
         startTimeStamp,
-        durationDays,
+        durationDays
       );
 
       return result;
     } catch (error) {
-      toast.error('Error revealing responses: ' + String(error));
+      console.error("Error revealing responses: " + String(error));
     }
-  }
+  };
 
-  return {publicDecrypt, userDecrypt};
-}
+  return { publicDecrypt, userDecrypt };
+};

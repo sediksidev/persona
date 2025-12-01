@@ -4,9 +4,7 @@ Design system untuk Persona Protocol frontend dengan style Microsoft/Trello yang
 
 ## 📁 File Location
 
-```
-styles/design-system.ts
-```
+```styles/design-system.ts```
 
 ## 🎨 Core Principles
 
@@ -210,6 +208,7 @@ import { buttons, cards, typography, spacing } from '@/styles/design-system';
 ### Common Patterns
 
 **Card with heading and button:**
+
 ```tsx
 <div className={cards.base}>
   <h3 className={typography.h3}>Title</h3>
@@ -219,6 +218,7 @@ import { buttons, cards, typography, spacing } from '@/styles/design-system';
 ```
 
 **Form group:**
+
 ```tsx
 <div>
   <label className={inputs.label}>Label</label>
@@ -227,6 +227,7 @@ import { buttons, cards, typography, spacing } from '@/styles/design-system';
 ```
 
 **Info box with icon:**
+
 ```tsx
 <div className={cards.infoBlue}>
   <p className={typography.smallBold}>Note:</p>
@@ -235,6 +236,7 @@ import { buttons, cards, typography, spacing } from '@/styles/design-system';
 ```
 
 **Navigation tabs:**
+
 ```tsx
 <div className="flex gap-2 border-b">
   <button className={buttons.tabActive}>Active</button>
