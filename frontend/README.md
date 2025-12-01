@@ -8,7 +8,9 @@ This frontend demonstrates how to build privacy-preserving applications using Za
 
 **Live Demo**: [Add your deployment URL]
 
-### Connected Contracts (Zama Testnet)
+### Connected Contracts
+
+**Network**: Sepolia Testnet (Zama fhEVM)
 
 - **Persona**: `0xc0cF5CC4348bE7D1E447B4EC5B5ee440A2C81Eb7`
 - **PersonaMock**: `0x9B38E8348BCaFf9BbFA182fDBA005d15c6f0fD2B`
@@ -100,13 +102,25 @@ frontend/
    npm install
    ```
 
-3. **Run development server**
+3. **Configure environment variables**
+
+   Create a `.env.local` file in the frontend directory:
+
+   ```bash
+   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+   NEXT_PUBLIC_ALCHEMY_ID=your_alchemy_api_key
+   ```
+
+   - **NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID**: Get your project ID from [WalletConnect Cloud](https://cloud.walletconnect.com)
+   - **NEXT_PUBLIC_ALCHEMY_ID**: Get your API key from [Alchemy Dashboard](https://dashboard.alchemy.com)
+
+4. **Run development server**
 
    ```bash
    npm run dev
    ```
 
-4. **Open in browser**
+5. **Open in browser**
 
    Navigate to [http://localhost:3000](http://localhost:3000)
 
@@ -153,6 +167,8 @@ Navigate to **Use Cases** page to interact with example contracts:
 - **Increment Counter**: Track engagement (requires age ≥ 18)
 
 Each example shows encrypted counters that only increment if conditions are met!
+
+> **💡 Important**: Transactions will **never revert** due to failed conditions. Instead, the contract state simply won't change if you don't meet requirements. This is because Persona returns encrypted booleans (`ebool`), enabling privacy-preserving conditional logic without exposing verification results on-chain.
 
 ## 🔧 Development Guide
 
@@ -280,7 +296,16 @@ vercel
 
 ### Environment Variables
 
-No environment variables required - contract addresses are in source code.
+Create `.env.local` with the following variables:
+
+```bash
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+NEXT_PUBLIC_ALCHEMY_ID=your_alchemy_api_key
+```
+
+**Required for:**
+- WalletConnect integration (wallet connection)
+- Alchemy RPC provider (Sepolia network access)
 
 ## 📚 Resources
 
@@ -292,8 +317,9 @@ No environment variables required - contract addresses are in source code.
 ## 🐛 Troubleshooting
 
 **Wallet not connecting?**
-- Ensure you're on Zama testnet
+- Ensure you're on Sepolia testnet (Zama fhEVM)
 - Check MetaMask is unlocked
+- Verify environment variables are set correctly
 - Try refreshing the page
 
 **Encryption failing?**

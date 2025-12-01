@@ -6,10 +6,22 @@ A privacy-preserving identity layer built with Fully Homomorphic Encryption (FHE
 
 **Persona** is a protocol layer that allows users to store encrypted personal information (birthday, gender) on-chain and enables smart contracts to verify conditions against this data without ever decrypting it. This creates a foundation for privacy-preserving KYC, age-gated content, gender-specific airdrops, and more.
 
-### Deployed Contracts (Zama Testnet)
+### Deployed Contracts
+
+**Network**: Sepolia Testnet (Zama fhEVM)
 
 - **Persona**: `0xc0cF5CC4348bE7D1E447B4EC5B5ee440A2C81Eb7`
 - **PersonaMock**: `0x9B38E8348BCaFf9BbFA182fDBA005d15c6f0fD2B`
+
+### ⚡ Important Behavior Note
+
+Persona provides a composable verification layer for dApps using Zama FHE. **All verification functions return `ebool` (encrypted boolean), not plain `bool`.** This means:
+
+- ✅ **No transaction reverts**: Verification failures don't throw errors
+- ✅ **Conditional state changes**: Use `FHE.select()` to apply changes only when conditions are met
+- ✅ **Privacy preserved**: Results remain encrypted until explicitly decrypted
+
+Example: If a user doesn't meet age requirements, `isAgeAtLeast()` returns an encrypted "false", and your contract's state remains unchanged when using proper FHE conditional logic.
 
 ## 🔑 Key Features
 
@@ -109,13 +121,15 @@ npx hardhat node
 npx hardhat deploy --network localhost
 ```
 
-**Testnet (Zama):**
+**Sepolia Testnet (Zama fhEVM):**
 ```bash
 npx hardhat deploy --network zama
 
 # Verify on explorer (if supported)
 npx hardhat verify --network zama <CONTRACT_ADDRESS>
 ```
+
+> **Note**: The "zama" network in hardhat config is configured for Sepolia with fhEVM support.
 
 ## 📋 Integration Guide
 
