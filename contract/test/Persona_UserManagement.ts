@@ -1,6 +1,6 @@
 import { ethers, fhevm } from "hardhat";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { Persona, Persona__factory, PersonaVerifierAdapter, PersonaVerifierAdapter__factory } from "../types";
+import { Persona, Persona__factory, PersonaMock, PersonaMock__factory } from "../types";
 import { expect } from "chai";
 import { FhevmType } from "@fhevm/hardhat-plugin";
 
@@ -333,18 +333,13 @@ describe("Persona - User Management", function () {
   });
 
   describe("Administrative functions", function () {
-    describe("Elon deploy PersonaVerifierAdapter and Deployer set adapter as verifier", function () {
-      let adapterContract: PersonaVerifierAdapter;
+    describe("Elon deploy PersonaMock and Deployer set adapter as verifier", function () {
+      let adapterContract: PersonaMock;
       let adapterContractAddress: string;
       beforeEach(async function () {
-        // elon deploy PersonaVerifierAdapter
-        const adapterFactory = (await ethers.getContractFactory(
-          "PersonaVerifierAdapter",
-          signers.elon,
-        )) as PersonaVerifierAdapter__factory;
-        adapterContract = (await adapterFactory
-          .connect(signers.elon)
-          .deploy(personaContractAddress)) as PersonaVerifierAdapter;
+        // elon deploy PersonaMock
+        const adapterFactory = (await ethers.getContractFactory("PersonaMock", signers.elon)) as PersonaMock__factory;
+        adapterContract = (await adapterFactory.connect(signers.elon).deploy(personaContractAddress)) as PersonaMock;
         adapterContractAddress = await adapterContract.getAddress();
 
         // deployer set adapter as verifier in persona contract
@@ -405,9 +400,9 @@ describe("Persona - User Management", function () {
       it("New admin can set another verifier. Old admin cannot set verifier", async function () {
         // Deploy another verifier contract for this test
         const anotherVerifierFactory = (await ethers.getContractFactory(
-          "PersonaVerifierAdapter",
+          "PersonaMock",
           signers.elon,
-        )) as PersonaVerifierAdapter__factory;
+        )) as PersonaMock__factory;
         const anotherVerifier = await anotherVerifierFactory.deploy(personaContractAddress);
         const anotherVerifierAddress = await anotherVerifier.getAddress();
 
@@ -429,9 +424,9 @@ describe("Persona - User Management", function () {
         // example contract address to be set as verifier
         // Deploy example verifier contracts
         const exampleVerifierFactory = (await ethers.getContractFactory(
-          "PersonaVerifierAdapter",
+          "PersonaMock",
           signers.deployer,
-        )) as PersonaVerifierAdapter__factory;
+        )) as PersonaMock__factory;
         const exampleVerifier = await exampleVerifierFactory.deploy(personaContractAddress);
         const exampleVerifierAddress = await exampleVerifier.getAddress();
 
