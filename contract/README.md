@@ -1,3 +1,9 @@
+# Persona
+LIFE CONTRACT (ETHEREUM)
+`Persona: 0xc0cF5CC4348bE7D1E447B4EC5B5ee440A2C81Eb7`
+`PersonaMock: 0x9B38E8348BCaFf9BbFA182fDBA005d15c6f0fD2B`
+
+
 # FHEVM Hardhat Template
 
 A Hardhat-based template for developing Fully Homomorphic Encryption (FHE) enabled Solidity smart contracts using the
