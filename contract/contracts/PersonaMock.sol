@@ -6,12 +6,12 @@ import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 import {IPersona} from "./IPersona.sol";
 
 /// @title PersonaMock
-/// @notice Mock contract untuk testing berbagai fungsi verifikasi di Persona
-///         Menyediakan berbagai test cases untuk validasi integrasi
+/// @notice Mock contract for testing various verification functions in Persona
+///         Provides various test cases for integration validation
 contract PersonaMock is ZamaEthereumConfig {
     IPersona public persona;
 
-    // Storage untuk berbagai test cases
+    // Storage for various test cases
     mapping(address => euint32) private _counters;
     mapping(address => euint8) private _voteCount;
     mapping(address => euint8) private _viewCount;
@@ -44,18 +44,18 @@ contract PersonaMock is ZamaEthereumConfig {
         FHE.allow(result, address(this));
     }
 
-    /// @notice Ambil nilai counter untuk user tertentu
+    /// @notice Get the counter value for a specific user
     function getCounter(address user) external view returns (euint32) {
         return _counters[user];
     }
 
     // ============================================
-    // TEST 2: Vote (Usia > 18 tahun)
+    // TEST 2: Vote (Age > 18 years)
     // ============================================
-    /// @notice Vote hanya bisa dilakukan jika usia > 18 tahun
+    /// @notice Vote can only be performed if age > 18 years
     function vote() external {
         address user = msg.sender;
-        ebool canVote = persona.isAgeAtLeast(user, 19); // > 18 berarti >= 19
+        ebool canVote = persona.isAgeAtLeast(user, 19); // > 18 means >= 19
         euint8 voteCount = _voteCount[user];
 
         if (!FHE.isInitialized(voteCount)) {
@@ -73,15 +73,15 @@ contract PersonaMock is ZamaEthereumConfig {
         FHE.allow(result, address(this));
     }
 
-    /// @notice Ambil jumlah vote untuk user tertentu
+    /// @notice Get the vote count for a specific user
     function getVoteCount(address user) external view returns (euint8) {
         return _voteCount[user];
     }
 
     // ============================================
-    // TEST 3: View (Hanya Perempuan)
+    // TEST 3: View (Female Only)
     // ============================================
-    /// @notice View hanya bisa dilakukan oleh perempuan
+    /// @notice View can only be performed by females
     function viewContent() external {
         address user = msg.sender;
         ebool isFemale = persona.isFemale(user);
@@ -102,21 +102,21 @@ contract PersonaMock is ZamaEthereumConfig {
         FHE.allow(result, address(this));
     }
 
-    /// @notice Ambil jumlah view untuk user tertentu
+    /// @notice Get the view count for a specific user
     function getViewCount(address user) external view returns (euint8) {
         return _viewCount[user];
     }
 
     // ============================================
-    // TEST 4: Claim (Laki-laki di bawah 30 tahun)
+    // TEST 4: Claim (Male under 30 years old)
     // ============================================
-    /// @notice Claim hanya bisa dilakukan oleh laki-laki berusia < 30 tahun
+    /// @notice Claim can only be performed by males under 30 years old
     function claimReward() external {
         address user = msg.sender;
         ebool isMale = persona.isMale(user);
         ebool isBelow30 = persona.isAgeBetween(user, 0, 29);
 
-        // Gabungkan kedua kondisi: isMale AND isBelow30
+        // Combine both conditions: isMale AND isBelow30
         ebool canClaim = FHE.and(isMale, isBelow30);
 
         euint8 claimCount = _claimCount[user];
@@ -136,7 +136,7 @@ contract PersonaMock is ZamaEthereumConfig {
         FHE.allow(result, address(this));
     }
 
-    /// @notice Ambil jumlah claim untuk user tertentu
+    /// @notice Get the claim count for a specific user
     function getClaimCount(address user) external view returns (euint8) {
         return _claimCount[user];
     }
