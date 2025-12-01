@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useWallet } from "@/contexts/WalletContext";
 
 interface HeaderProps {
     currentPage?: "home" | "register" | "use-cases" | "how-to";
@@ -6,6 +9,8 @@ interface HeaderProps {
 }
 
 export default function Header({ currentPage, containerWidth = "max-w-7xl" }: HeaderProps) {
+    const { isConnected, address, connect, disconnect } = useWallet();
+
     return (
         <header className="border-b border-gray-200 bg-white">
             <nav className={`mx-auto flex ${containerWidth} items-center justify-between px-6 py-3`}>
@@ -15,7 +20,7 @@ export default function Header({ currentPage, containerWidth = "max-w-7xl" }: He
                     </div>
                     <span className="text-lg font-semibold text-gray-900">Persona</span>
                 </Link>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                     <Link
                         href="/register"
                         className={`rounded px-3 py-1.5 text-sm font-medium ${currentPage === "register"
@@ -43,6 +48,23 @@ export default function Header({ currentPage, containerWidth = "max-w-7xl" }: He
                     >
                         How to
                     </Link>
+
+                    {/* Connect Button */}
+                    {isConnected ? (
+                        <button
+                            onClick={disconnect}
+                            className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            {address}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={connect}
+                            className="rounded bg-green-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-700"
+                        >
+                            Connect
+                        </button>
+                    )}
                 </div>
             </nav>
         </header>
