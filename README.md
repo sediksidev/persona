@@ -1,211 +1,207 @@
-# Persona - Privacy-Preserving Identity Protocol
+# **Persona – Privacy-Preserving Identity Protocol**
 
-> Zero-knowledge identity verification powered by Fully Homomorphic Encryption (FHE)
+**Zero-knowledge identity verification powered by Fully Homomorphic Encryption (FHE)**
 
-Persona is a privacy-first identity layer that enables on-chain verification of personal attributes (age, gender) without revealing the actual data. Built on Zama's fhEVM, it provides a foundation for privacy-preserving KYC, age-gated content, targeted airdrops, and more.
+Persona is a privacy-first identity layer that enables on-chain verification of personal attributes (such as age and gender) **without revealing the underlying data**.
+Built on **Zama’s fhEVM**, Persona provides a foundation for privacy-preserving KYC, age-gated content, targeted airdrops, governance filters, and more.
 
-## ��� Network
+---
 
-**Sepolia Testnet** with Zama fhEVM support
+## 🌐 Network
 
-All contracts are deployed on Sepolia testnet. Make sure to configure your wallet for Sepolia network.
+**Sepolia Testnet (Zama fhEVM compatible)**
+All contracts are deployed on the Sepolia testnet. Make sure your wallet is configured for it.
 
-## ��� What is Persona?
+---
 
-Persona allows users to **store encrypted personal data** (birthday, gender) on the blockchain and enables smart contracts to **verify conditions** without ever decrypting the data.
+## ❓ What is Persona?
 
-**Example Use Cases:**
-- ���️ **DAO Voting**: Restrict voting to users over 18 without collecting birthdates
-- ��� **Targeted Airdrops**: Distribute tokens to specific demographics (e.g., males under 30)
-- ��� **Age-Gated Content**: Control access to adult content without revealing age
-- ��� **Gender-Specific Communities**: Exclusive access based on gender
-- ��� **Compliant DeFi**: Privacy-preserving KYC/AML checks
+Persona lets users store encrypted personal data (birthday, gender) on-chain and allows dApps or smart contracts to verify conditions **without decrypting** anything.
 
-## ⚡ Important: How Persona Works with Your dApp
+### Example Use Cases
 
-Persona provides a **composable verification layer** for any dApp using Zama FHE. Here's what makes it unique:
+* 🗳️ **DAO Voting**: Allow voting only for users over 18 without collecting dates of birth
+* 🎯 **Targeted Airdrops**: Reward specific demographics (for example: males under 30)
+* 🔞 **Age-Gated Content**: Control access to adult content
+* 👥 **Gender-Based Communities**: Access control for women-only spaces
+* 💼 **Compliant DeFi**: Privacy-preserving KYC checks
 
-### ��� Key Behavior: Returns \`ebool\`, Not \`bool\`
+---
 
-All verification functions (\`isAgeAtLeast\`, \`isMale\`, \`isFemale\`, etc.) return **encrypted booleans (\`ebool\`)**, not plain booleans. This means:
+## ⚡ Key Concept: Persona Returns `ebool`, Not `bool`
 
-- ✅ **No Transaction Reverts**: Verification failures don't throw errors or revert transactions
-- ✅ **Privacy-Preserving**: Verification results remain encrypted on-chain
-- ✅ **Conditional State Changes**: Use \`FHE.select()\` to apply changes only when conditions are met
-- ✅ **Seamless Integration**: Your contract continues to work even if users don't meet requirements
+All verification functions (`isAgeAtLeast`, `isFemale`, etc.) return **encrypted booleans** (`ebool`), not plaintext booleans.
 
-**Example:**
-\`\`\`solidity
-// User calls claimReward() but is only 16 years old
-ebool isAdult = persona.isAgeAtLeast(user, 18); // Returns encrypted "false"
+### This means:
 
-// Contract executes without reverting
+* ✅ **No transaction reverts** when verification fails
+* ✅ **Privacy-preserving** results
+* ✅ **Conditional updates via `FHE.select()`**
+* ✅ **Smooth UX** even for ineligible users
+
+### Example
+
+```solidity
+// User calls claimReward() but is 16
+ebool isAdult = persona.isAgeAtLeast(msg.sender, 18);
+
+// No revert occurs
 euint8 reward = FHE.select(
     isAdult,
-    FHE.asEuint8(100),  // Would give 100 if adult
-    FHE.asEuint8(0)     // Gives 0 because user is minor
+    FHE.asEuint8(100),   // Adult reward
+    FHE.asEuint8(0)      // Minor reward
 );
 
-// State doesn't change - user gets 0 tokens
-// ✅ Transaction succeeds
-// ✅ No error thrown
-// ✅ Privacy maintained
-\`\`\`
+// Transaction succeeds, data stays encrypted
+```
 
-This design allows you to build **privacy-preserving access control** without exposing verification results or disrupting user experience with reverted transactions.
+---
 
-## ���️ Architecture
+## 🏛️ Architecture
 
-\`\`\`
-┌─────────────────────────────────────────────────────────┐
-│                    User (Frontend)                       │
-│  - Encrypt birthday & gender client-side                 │
-│  - Submit encrypted data to Persona contract             │
-│  - Decrypt own data when needed                          │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│              Persona Protocol (Contract)                 │
-│  - Store encrypted euint64 (birthday timestamp)          │
-│  - Store encrypted euint8 (gender: 1=M, 2=F, 3=Other)    │
-│  - Validate data integrity (encrypted checks)            │
-│  - Provide verification functions to authorized contracts│
-│  - Returns ebool (encrypted boolean) for all checks      │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│          Verifier Contracts (PersonaMock, etc.)          │
-│  - Call persona.isAgeAtLeast(user, 18)                   │
-│  - Call persona.isFemale(user)                           │
-│  - Use FHE.select() for conditional logic                │
-│  - Everything stays encrypted end-to-end                 │
-│  - No reverts on failed verification                     │
-└─────────────────────────────────────────────────────────┘
-\`\`\`
+```
+┌──────────────────────────────────────────────┐
+│ User (Frontend)                              │
+│ - Encrypt birthday & gender                  │
+│ - Submit encrypted data                      │
+│ - Decrypt their own data                     │
+└───────────────────┬──────────────────────────┘
+                    ▼
+┌──────────────────────────────────────────────┐
+│ Persona Contract                             │
+│ - Stores euint64 (birthday) & euint8 (gender)│
+│ - Validates encrypted inputs                 │
+│ - Authorizes verifier contracts              │
+│ - Returns ebool for all checks               │
+└───────────────────┬──────────────────────────┘
+                    ▼
+┌──────────────────────────────────────────────┐
+│ Verifier Contracts                           │
+│ - Call `isAgeAtLeast`, `isFemale`, etc.      │
+│ - Use `FHE.select()` for conditional logic   │
+│ - No revert on failed verification           │
+└──────────────────────────────────────────────┘
+```
 
-## ��� Repository Structure
+---
 
-\`\`\`
+## 📁 Repository Structure
+
+```
 persona/
-├── contract/              # Smart contracts (Hardhat)
+├── contract/
 │   ├── contracts/
-│   │   ├── Persona.sol           # Core protocol contract
-│   │   ├── PersonaMock.sol       # Integration examples
-│   │   └── IPersona.sol          # Interface
-│   ├── test/              # Contract tests
-│   └── deploy/            # Deployment scripts
-│
-└── frontend/              # Web interface (Next.js)
-    ├── app/               # Next.js pages
-    │   ├── page.tsx              # Registration
-    │   ├── use-cases/            # Live examples
-    │   └── how-to/               # Developer guide
-    ├── components/        # UI components
-    ├── hooks/             # React hooks for contract interaction
-    └── services/          # FHE utilities & contract configs
-\`\`\`
+│   │   ├── Persona.sol
+│   │   ├── PersonaMock.sol
+│   │   └── IPersona.sol
+│   ├── test/
+│   └── deploy/
+└── frontend/
+    ├── app/
+    │   ├── page.tsx
+    │   ├── use-cases/
+    │   └── how-to/
+    ├── components/
+    ├── hooks/
+    └── services/
+```
 
-## ��� Quick Start
+---
 
-### Prerequisites
-
-- **Node.js** 20+
-- **MetaMask** or compatible Web3 wallet configured for **Sepolia testnet**
-- **Testnet ETH** (Sepolia faucet)
+## 🚀 Quick Start
 
 ### 1. Smart Contracts
 
-\`\`\`bash
+```bash
 cd contract
 npm install
 npm run compile
 npm run test
 
-# Deploy to Sepolia (Zama fhEVM)
+# Deploy to Sepolia fhEVM
 npx hardhat deploy --network zama
-\`\`\`
+```
 
-��� **[Full Contract Documentation](./contract/README.md)**
+### 2. Frontend
 
-### 2. Frontend Application
-
-\`\`\`bash
+```bash
 cd frontend
 npm install
-
-# Configure environment variables
-# Create .env.local with:
-# NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
-# NEXT_PUBLIC_ALCHEMY_ID=your_alchemy_key
-
 npm run dev
-# Open http://localhost:3000
-\`\`\`
+```
 
-**Required Environment Variables:**
-- \`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID\`: Get from [WalletConnect Cloud](https://cloud.walletconnect.com)
-- \`NEXT_PUBLIC_ALCHEMY_ID\`: Get from [Alchemy Dashboard](https://dashboard.alchemy.com)
+`.env.local`
 
-��� **[Full Frontend Documentation](./frontend/README.md)**
+```
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
+NEXT_PUBLIC_ALCHEMY_ID=
+```
 
-## ��� Key Features
+---
 
-### Privacy-First Architecture
-- ✅ **Client-Side Encryption**: Data encrypted before blockchain submission
-- ✅ **Zero-Knowledge Verification**: Contracts verify conditions without decryption
-- ✅ **Selective Disclosure**: Users decrypt only when they choose
+## ⭐ Key Features
+
+### Privacy-First
+
+* Client-side encryption
+* No plaintext identity data stored on-chain
+* Zero-knowledge-style verification via FHE
+* Selective disclosure by the user
 
 ### Developer-Friendly
-- ✅ **Simple Interface**: \`persona.isAgeAtLeast(user, 18)\` returns encrypted boolean
-- ✅ **Composable**: Any contract can be authorized as a verifier
-- ✅ **Well-Documented**: Complete examples and integration guides
-- ✅ **No Reverts**: Failed verifications don't break user flow
+
+* Simple API: `persona.isAgeAtLeast(user, 18)`
+* All results encrypted (`ebool`)
+* Verifier-contract authorization
+* No `require()` or revert on eligibility checks
 
 ### Production-Ready
-- ✅ **Immutable Data**: One-time storage prevents tampering
-- ✅ **Built-in Validation**: Encrypted checks ensure data integrity
-- ✅ **Access Control**: Only authorized verifiers can query data
 
-## ��� Deployed Contracts
+* Immutable identity data
+* Encrypted validation logic
+* Access control for verifier contracts
+* Resistant to front-running & data scraping
 
-**Network**: Sepolia Testnet (Zama fhEVM)
+---
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **Persona** | \`0xc0cF5CC4348bE7D1E447B4EC5B5ee440A2C81Eb7\` | Core protocol |
-| **PersonaMock** | \`0x9B38E8348BCaFf9BbFA182fDBA005d15c6f0fD2B\` | Example integrations |
+## 📜 Deployed Contracts (Sepolia)
 
-## ��� Live Examples
+| Contract    | Address                                      | Description         |
+| ----------- | -------------------------------------------- | ------------------- |
+| Persona     | `0xc0cF5CC4348bE7D1E447B4EC5B5ee440A2C81Eb7` | Core identity layer |
+| PersonaMock | `0x9B38E8348BCaFf9BbFA182fDBA005d15c6f0fD2B` | Integration demo    |
 
-The PersonaMock contract demonstrates 4 real-world patterns:
+---
 
-### 1. **Conditional Counter** (\`conditionalIncrement\`)
-- **Condition**: Age ≥ 18
-- **Use Case**: Track adult-only engagement
-- **Behavior**: Counter increments only for adults; minors' transactions succeed but counter stays same
+## 🧬 Live Example Patterns (PersonaMock)
 
-### 2. **Age-Gated Voting** (\`vote\`)
-- **Condition**: Age > 18
-- **Use Case**: DAO governance
-- **Behavior**: Vote counted only for adults; underage users can call but vote isn't recorded
+### 1. Conditional Counter (`conditionalIncrement`)
 
-### 3. **Gender-Gated Access** (\`viewContent\`)
-- **Condition**: Gender = Female
-- **Use Case**: Exclusive communities
-- **Behavior**: View count increments only for females; others can call but count doesn't change
+* Condition: Age ≥ 18
+* Adults increment counter
+* Minors: transaction succeeds, no effect
 
-### 4. **Multi-Condition Airdrop** (\`claimReward\`)
-- **Condition**: Male AND Age < 30
-- **Use Case**: Targeted token distribution
-- **Behavior**: Reward given only to eligible users; ineligible users get 0 without transaction revert
+### 2. Age-Gated Voting (`vote`)
 
-Try them live at the frontend's **Use Cases** page!
+* Count vote only for adults
+* Underage users can still call without breaking UX
 
-## ��� Integration Example
+### 3. Gender-Gated Content (`viewContent`)
 
-\`\`\`solidity
+* Female-only access
+* Non-female: no state update
+
+### 4. Targeted Airdrop (`claimReward`)
+
+* Condition: Male AND Age < 30
+* Eligible users receive tokens
+* Ineligible users get 0, no revert
+
+---
+
+## 🔗 Integration Example
+
+```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
@@ -221,123 +217,110 @@ contract MyContract {
     }
 
     function claimReward() external {
-        // Get encrypted boolean: is user adult?
         ebool isAdult = persona.isAgeAtLeast(msg.sender, 18);
 
-        // Conditional logic using FHE
-        // ✅ No revert if user is minor
-        // ✅ State changes only if condition is met
         euint8 reward = FHE.select(
             isAdult,
-            FHE.asEuint8(100),  // Adults get 100 tokens
-            FHE.asEuint8(0)     // Minors get 0
+            FHE.asEuint8(100),
+            FHE.asEuint8(0)
         );
 
         _rewards[msg.sender] = FHE.add(_rewards[msg.sender], reward);
-
-        // Data stays encrypted end-to-end!
-        // Transaction succeeds regardless of age!
     }
 }
-\`\`\`
-
-## ��� How It Works
-
-### Registration Flow
-1. User enters birthday + gender in frontend
-2. Frontend encrypts data using FHE (client-side)
-3. Encrypted handles sent to Persona contract
-4. Contract validates and stores (all encrypted)
-
-### Verification Flow
-1. Verifier contract calls \`persona.isAgeAtLeast(user, 18)\`
-2. Persona computes age from encrypted birthday
-3. Returns encrypted boolean (ebool)
-4. Verifier uses \`FHE.select()\` for conditional logic
-5. **Original data never decrypted!**
-6. **No transaction revert on failed verification!**
-
-### Decryption Flow
-1. User clicks "Decrypt" in frontend
-2. Signs decryption request with wallet
-3. Frontend fetches encrypted handles from contract
-4. Relayer decrypts using user's signature
-5. Decrypted values shown only to user
-
-## ��� Documentation
-
-- **[Contract README](./contract/README.md)** - Smart contract development
-- **[Frontend README](./frontend/README.md)** - Web application guide
-- **[Zama fhEVM Docs](https://docs.zama.ai/fhevm)** - Core FHE technology
-- **[API Reference](./docs/API.md)** - Contract interface details *(coming soon)*
-
-## ���️ Tech Stack
-
-**Smart Contracts:**
-- Solidity 0.8.24
-- Zama fhEVM (FHE operations)
-- Hardhat (development framework)
-- Sepolia Testnet
-
-**Frontend:**
-- Next.js 16 (React framework)
-- Wagmi 2.x (Web3 hooks)
-- Tailwind CSS 4 (styling)
-- TypeScript (type safety)
-- WalletConnect & Alchemy
-
-## ��� Testing
-
-**Contract Tests:**
-\`\`\`bash
-cd contract
-npm run test
-npm run coverage
-\`\`\`
-
-**Frontend:**
-\`\`\`bash
-cd frontend
-npm run lint
-npm run build
-\`\`\`
-
-## �� Use Cases & Applications
-
-- **���️ Governance**: Age-restricted voting in DAOs
-- **��� Finance**: Compliant DeFi products (accredited investors)
-- **�� Gaming**: Age-appropriate content filtering
-- **��� Education**: Verify student status privately
-- **��� Healthcare**: Age verification for medical services
-- **��� Events**: Age-gated ticketing systems
-- **��� Dating**: Gender/age filtering in social apps
-
-## ��� Security Considerations
-
-1. **Immutability**: Users can only register once
-2. **Encrypted Validation**: Birthday < now, Gender ∈ {1,2,3}
-3. **Access Control**: Only authorized verifiers can query
-4. **Client-Side Encryption**: Keys never leave user's browser
-5. **No Data Exposure**: Contract only stores encrypted handles
-6. **Graceful Failures**: Unmet conditions don't revert transactions
-
-## ��� License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## ��� Support & Community
-
-- **��� Documentation**: [docs.zama.ai](https://docs.zama.ai)
-- **��� Discord**: [Zama Community](https://discord.gg/zama)
-- **��� Issues**: [GitHub Issues](https://github.com/zama-ai/fhevm/issues)
-- **��� Twitter**: [@zama_fhe](https://twitter.com/zama_fhe)
-
-## ��� Acknowledgments
-
-Built with [Zama's fhEVM](https://www.zama.ai/fhevm) - the first confidential smart contract protocol using Fully Homomorphic Encryption.
+```
 
 ---
 
-**��� Privacy is a right, not a privilege.**
+## 🔍 How It Works
 
-*Built with ❤️ for a more private Web3*
+### Registration Flow
+
+1. User inputs birthday + gender
+2. Frontend encrypts data locally
+3. Sends encrypted data to Persona contract
+4. Contract stores and validates them (all encrypted)
+
+### Verification Flow
+
+1. Verifier calls a function (e.g. `isAgeAtLeast`)
+2. Persona performs encrypted calculation
+3. Returns `ebool`
+4. Verifier uses `FHE.select()` for conditional logic
+
+### Decryption Flow
+
+* Only the user can decrypt their own data
+* Decryption requires the user’s wallet signature
+* Contract never sees plaintext
+
+---
+
+## 📚 Documentation
+
+* Contract README
+* Frontend README
+* Zama fhEVM Docs
+* API Reference (coming soon)
+
+---
+
+## 🧪 Testing
+
+### Contract
+
+```bash
+cd contract
+npm run test
+npm run coverage
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+---
+
+## 🧭 Use Cases
+
+* Governance (age verification)
+* DeFi compliance
+* Gaming content gates
+* Education eligibility checks
+* Healthcare age-based access
+* Event ticketing
+* Dating apps demographic filters
+
+---
+
+## 🔐 Security Considerations
+
+* Immutable identity
+* Encrypted input validation
+* Verifier-only access
+* No plaintext storage
+* Graceful failures (no revert)
+* Client-side encryption keys
+
+---
+
+## 📜 License
+
+MIT License
+
+---
+
+## 🤝 Support & Community
+
+* 📘 Docs: [https://docs.zama.ai](https://docs.zama.ai)
+* 💬 Discord: Zama Community
+* 🐞 GitHub Issues
+* 🐦 Twitter: @zama_fhe
+
+---
+
+❤️ Privacy is a right, not a privilege.
