@@ -61,6 +61,7 @@ export const useFheDecryption = () => {
           contractAddress: contractAddress,
         };
       });
+      console.log("Handle-Contract Pairs:", handleContractPair);
       const startTimeStamp = Math.floor(Date.now() / 1000).toString();
       const durationDays = "10"; // String for consistency
       const contractAddresses = [contractAddress];
