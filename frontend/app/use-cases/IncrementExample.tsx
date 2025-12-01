@@ -1,24 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useIncrement } from "@/hooks/useIncrement";
 import { cards, typography, spacing, buttons } from "@/styles/design-system";
 
 export default function IncrementExample() {
-    const [isExecuting, setIsExecuting] = useState(false);
-    const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
-
-    const executeAction = async () => {
-        setIsExecuting(true);
-        setResult(null);
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        const success = Math.random() > 0.3;
-        setResult({
-            success,
-            message: success ? "Action successful!" : "Action failed. Persona criteria not met.",
-        });
-        setIsExecuting(false);
-    };
+    const { increment, isIncrementing, incrementResult, decryptCounter, isDecrypting, decryptedCounter } = useIncrement();
 
     return (
         <div className={cards.base}>
@@ -45,18 +31,42 @@ export default function IncrementExample() {
                 </div>
             </div>
 
-            <button
-                onClick={executeAction}
-                disabled={isExecuting}
-                className={`${buttons.primary} ${buttons.fullWidth}`}
-            >
-                {isExecuting ? "Executing..." : "Execute action"}
-            </button>
+            <div className={spacing.spaceY.sm}>
+                <button
+                    onClick={increment}
+                    disabled={isIncrementing}
+                    className={`${buttons.primary} ${buttons.fullWidth}`}
+                >
+                    {isIncrementing ? "Incrementing..." : "Increment Counter (Age ≥ 18)"}
+                </button>
 
-            {result && (
-                <div className={`${spacing.mt.md} ${result.success ? cards.success : cards.error}`}>
-                    <p className={`${typography.bodyBold} ${spacing.mb.xs}`}>{result.success ? "✓ Success" : "✗ Failed"}</p>
-                    <p className={`${typography.body} opacity-90`}>{result.message}</p>
+                <button
+                    onClick={decryptCounter}
+                    disabled={isDecrypting}
+                    className={`${buttons.secondary} ${buttons.fullWidth}`}
+                >
+                    {isDecrypting ? "Decrypting..." : "Check My Counter"}
+                </button>
+            </div>
+
+            {/* Counter Display */}
+            {decryptedCounter !== null && (
+                <div className={`${spacing.mt.md} ${cards.infoBlue}`}>
+                    <p className={`${typography.bodyBold} ${spacing.mb.xs}`}>Your Counter</p>
+                    <p className={`${typography.h2} opacity-90`}>{decryptedCounter}</p>
+                    <p className={`${typography.small} opacity-75 ${spacing.mt.xs}`}>
+                        {decryptedCounter === "0"
+                            ? "You haven't incremented yet, or you're under 18 years old"
+                            : "Number of successful increments (age ≥ 18)"}
+                    </p>
+                </div>
+            )}
+
+            {/* Result */}
+            {incrementResult && (
+                <div className={`${spacing.mt.md} ${incrementResult.success ? cards.success : cards.error}`}>
+                    <p className={`${typography.bodyBold} ${spacing.mb.xs}`}>{incrementResult.success ? "✓ Success" : "✗ Failed"}</p>
+                    <p className={`${typography.body} opacity-90`}>{incrementResult.message}</p>
                 </div>
             )}
         </div>

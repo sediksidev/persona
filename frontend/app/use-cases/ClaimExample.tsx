@@ -1,24 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useClaim } from "@/hooks/useClaim";
 import { cards, typography, spacing, buttons } from "@/styles/design-system";
 
 export default function ClaimExample() {
-    const [isExecuting, setIsExecuting] = useState(false);
-    const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
-
-    const executeAction = async () => {
-        setIsExecuting(true);
-        setResult(null);
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        const success = Math.random() > 0.3;
-        setResult({
-            success,
-            message: success ? "Action successful!" : "Action failed. Persona criteria not met.",
-        });
-        setIsExecuting(false);
-    };
+    const { claimReward, isClaiming, claimResult, decryptClaimCount, isDecrypting, decryptedCount } = useClaim();
 
     return (
         <div className={cards.base}>
@@ -45,18 +31,42 @@ export default function ClaimExample() {
                 </div>
             </div>
 
-            <button
-                onClick={executeAction}
-                disabled={isExecuting}
-                className={`${buttons.primary} ${buttons.fullWidth}`}
-            >
-                {isExecuting ? "Executing..." : "Execute action"}
-            </button>
+            <div className={spacing.spaceY.sm}>
+                <button
+                    onClick={claimReward}
+                    disabled={isClaiming}
+                    className={`${buttons.primary} ${buttons.fullWidth}`}
+                >
+                    {isClaiming ? "Claiming..." : "Claim Reward (Male & Age < 30)"}
+                </button>
 
-            {result && (
-                <div className={`${spacing.mt.md} ${result.success ? cards.success : cards.error}`}>
-                    <p className={`${typography.bodyBold} ${spacing.mb.xs}`}>{result.success ? "✓ Success" : "✗ Failed"}</p>
-                    <p className={`${typography.body} opacity-90`}>{result.message}</p>
+                <button
+                    onClick={decryptClaimCount}
+                    disabled={isDecrypting}
+                    className={`${buttons.secondary} ${buttons.fullWidth}`}
+                >
+                    {isDecrypting ? "Decrypting..." : "Check My Claim Count"}
+                </button>
+            </div>
+
+            {/* Claim Count Display */}
+            {decryptedCount !== null && (
+                <div className={`${spacing.mt.md} ${cards.infoBlue}`}>
+                    <p className={`${typography.bodyBold} ${spacing.mb.xs}`}>Your Claim Count</p>
+                    <p className={`${typography.h2} opacity-90`}>{decryptedCount}</p>
+                    <p className={`${typography.small} opacity-75 ${spacing.mt.xs}`}>
+                        {decryptedCount === "0"
+                            ? "You haven't claimed yet, or you don't meet the requirements (male & age < 30)"
+                            : "Number of successful claims (male & age < 30)"}
+                    </p>
+                </div>
+            )}
+
+            {/* Result */}
+            {claimResult && (
+                <div className={`${spacing.mt.md} ${claimResult.success ? cards.success : cards.error}`}>
+                    <p className={`${typography.bodyBold} ${spacing.mb.xs}`}>{claimResult.success ? "✓ Success" : "✗ Failed"}</p>
+                    <p className={`${typography.body} opacity-90`}>{claimResult.message}</p>
                 </div>
             )}
         </div>
