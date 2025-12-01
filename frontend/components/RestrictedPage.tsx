@@ -1,14 +1,15 @@
 "use client";
 
-import { useWallet } from "@/contexts/WalletContext";
+import { ConnectKitButton } from "connectkit";
 import { ReactNode } from "react";
+import { useAccount } from "wagmi";
 
 interface RestrictedPageProps {
     children: ReactNode;
 }
 
 export default function RestrictedPage({ children }: RestrictedPageProps) {
-    const { isConnected, connect } = useWallet();
+    const { isConnected } = useAccount();
 
     if (!isConnected) {
         return (
@@ -35,12 +36,9 @@ export default function RestrictedPage({ children }: RestrictedPageProps) {
                     <p className="mb-6 text-sm text-gray-600">
                         Please connect your wallet to access this page
                     </p>
-                    <button
-                        onClick={connect}
-                        className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
-                    >
-                        Connect wallet
-                    </button>
+                    <div className="flex justify-center">
+                        <ConnectKitButton />
+                    </div>
                 </div>
             </div>
         );

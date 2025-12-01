@@ -1,3 +1,4 @@
+"use client";
 import { useContext, createContext } from "react";
 import { type FhevmGoState } from "@/lib/fhevm-react/useFhevm";
 import type { FhevmInstance } from "@/lib/fhevm-react/fhevmTypes";

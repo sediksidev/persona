@@ -1,7 +1,7 @@
 "use client";
 
+import { ConnectKitButton } from "connectkit";
 import Link from "next/link";
-import { useWallet } from "@/contexts/WalletContext";
 
 interface HeaderProps {
     currentPage?: "home" | "register" | "use-cases" | "how-to";
@@ -9,7 +9,6 @@ interface HeaderProps {
 }
 
 export default function Header({ currentPage, containerWidth = "max-w-7xl" }: HeaderProps) {
-    const { isConnected, address, connect, disconnect } = useWallet();
 
     return (
         <header className="border-b border-gray-200 bg-white">
@@ -50,21 +49,8 @@ export default function Header({ currentPage, containerWidth = "max-w-7xl" }: He
                     </Link>
 
                     {/* Connect Button */}
-                    {isConnected ? (
-                        <button
-                            onClick={disconnect}
-                            className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                            {address}
-                        </button>
-                    ) : (
-                        <button
-                            onClick={connect}
-                            className="rounded bg-green-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-700"
-                        >
-                            Connect
-                        </button>
-                    )}
+                    <ConnectKitButton />
+
                 </div>
             </nav>
         </header>

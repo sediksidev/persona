@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { usePublicClient } from 'wagmi';
-import { useFhevm } from '@/fhevm-react/useFhevm';
+import { useFhevm } from '@/lib/fhevm-react/useFhevm';
 import { FhevmContext } from './useFhevmContext';
 
 
